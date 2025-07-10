@@ -1,0 +1,75 @@
+spring:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:oracle:thin:@192.168.139.101:1521:XE
+    username: sjzt
+    password: oracle123
+    driver-class-name: oracle.jdbc.OracleDriver
+    druid:
+      # Druid 专有配置
+      connect-timeout: 30000  # 连接超时时间（毫秒）
+      validation-query: SELECT 1 FROM DUAL  # Oracle 健康检查语句
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      
+      # 连接池配置
+      initial-size: 5  # 初始化连接数
+      min-idle: 5      # 最小空闲连接数
+      max-active: 20   # 最大活跃连接数
+      max-wait: 60000  # 获取连接等待超时时间
+      
+      # 监控统计配置
+      stat-view-servlet:
+        enabled: true                    # 启用StatViewServlet（监控页面）
+        url-pattern: /druid/*           # 访问路径规则
+        reset-enable: false             # 禁用HTML页面上的"Reset All"功能
+        login-username: admin           # 登录用户名
+        login-password: admin123        # 登录密码
+        allow: ""                       # IP白名单(没有配置或者为空，则允许所有访问)
+        deny: ""                        # IP黑名单
+        # 关键配置：控制监控页面显示行为
+        init-parameters:
+          slowSqlMillis: '1000'         # 慢SQL阈值，Web页面中标记慢SQL
+          maxSqlSize: '200'             # 最大SQL记录数量
+          resetEnable: 'false'          # 禁用重置功能
+          sqlStatCollectCount: 'false'  # 尝试减少非慢SQL的收集
+        
+      # Web监控配置
+      web-stat-filter:
+        enabled: true                   # 启用WebStatFilter
+        url-pattern: /*                 # 拦截所有请求
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"  # 排除一些不必要的url
+        
+      # 慢SQL记录配置 - 关键配置：只记录和统计慢SQL
+      filter:
+        stat:
+          enabled: true                 # 启用SQL监控
+          log-slow-sql: true           # 记录慢SQL到日志
+          slow-sql-millis: 1000         # 慢SQL阈值（毫秒）
+          merge-sql: true              # 合并相同的SQL统计
+          db-type: oracle              # 指定数据库类型
+        wall:
+          enabled: true                 # 启用防火墙功能
+          config:
+            multi-statement-allow: true # 允许执行多条SQL语句
+            
+      # 过滤器配置
+      filters: stat,wall
+      
+      # 连接属性配置 - 核心配置：控制StatFilter行为
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=1000;druid.stat.logSlowSql=true;druid.stat.dbType=oracle;druid.stat.logViolation=false;druid.stat.maxSqlSize=200;druid.stat.sqlStatCollectCount=false
+
+# 日志配置，专门输出慢SQL日志
+logging:
+  level:
+    druid.sql.Statement: debug         # 开启Druid慢SQL日志（必须）
+    druid.sql.DataSource: warn         # 减少数据源日志输出
+    druid.sql.Connection: warn         # 减少连接日志输出
+    druid.sql.ResultSet: warn          # 减少结果集日志输出
+    # 专门的慢SQL日志配置
+    com.alibaba.druid.filter.stat.StatFilter: debug  # 统计过滤器日志
+    com.alibaba.druid.filter.logging.Slf4jLogFilter: debug  # SLF4J日志过滤器 
