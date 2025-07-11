@@ -256,16 +256,32 @@ public class FrontendLogController {
     }
 
     /**
-     * 验证日志请求内容大小
+     * 验证日志请求内容
      */
     private String validateLogRequest(FrontendLogRequest logRequest) {
+        // 必填字段验证（只要求最基础的字段）
+        if (logRequest.getLevel() == null || logRequest.getLevel().trim().isEmpty()) {
+            return "日志级别不能为空";
+        }
+        
+        if (logRequest.getMessage() == null || logRequest.getMessage().trim().isEmpty()) {
+            return "日志消息不能为空";
+        }
+        
+        // 验证日志级别是否有效
+        String level = logRequest.getLevel().toUpperCase();
+        if (!level.equals("DEBUG") && !level.equals("INFO") && 
+            !level.equals("WARN") && !level.equals("ERROR")) {
+            return "不支持的日志级别: " + logRequest.getLevel() + "，支持：DEBUG, INFO, WARN, ERROR";
+        }
+        
         // 单个字段最大长度限制（防止过大内容）
         final int MAX_MESSAGE_LENGTH = 10000;  // 消息最大10KB
         final int MAX_STACK_LENGTH = 50000;    // 堆栈最大50KB 
         final int MAX_METADATA_LENGTH = 5000;  // 元数据最大5KB
         final int MAX_URL_LENGTH = 2000;       // URL最大2KB
         
-        if (logRequest.getMessage() != null && logRequest.getMessage().length() > MAX_MESSAGE_LENGTH) {
+        if (logRequest.getMessage().length() > MAX_MESSAGE_LENGTH) {
             return "日志消息过长，最大支持" + MAX_MESSAGE_LENGTH + "字符";
         }
         
