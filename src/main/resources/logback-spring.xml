@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 日志根目录 -->
+    <property name="LOG_HOME" value="./logs" />
+    
+    <!-- 日志文件命名规范 -->
+    <property name="APP_NAME" value="druid-slow-sql" />
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n" />
+    <property name="FRONTEND_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [Frontend] %-5level - %msg%n" />
+    
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 应用日志文件输出 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${APP_NAME}-application.log</file>
+        <append>false</append> <!-- 系统启动时清空日志文件 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 滚动策略：按时间和大小滚动 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/archive/${APP_NAME}-application-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize> <!-- 单个文件最大50MB -->
+            <maxHistory>30</maxHistory> <!-- 保留30天 -->
+            <totalSizeCap>2GB</totalSizeCap> <!-- 总文件大小限制2GB -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart> <!-- 启动时清理历史文件 -->
+        </rollingPolicy>
+    </appender>
+
+    <!-- 错误日志文件输出 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${APP_NAME}-error.log</file>
+        <append>false</append> <!-- 系统启动时清空日志文件 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 只记录ERROR级别日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 滚动策略：按时间和大小滚动 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/archive/${APP_NAME}-error-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize> <!-- 单个文件最大20MB -->
+            <maxHistory>60</maxHistory> <!-- 错误日志保留60天 -->
+            <totalSizeCap>500MB</totalSizeCap> <!-- 总文件大小限制500MB -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart> <!-- 启动时清理历史文件 -->
+        </rollingPolicy>
+    </appender>
+
+    <!-- 慢SQL日志文件输出 -->
+    <appender name="SLOW_SQL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${APP_NAME}-slow-sql.log</file>
+        <append>false</append> <!-- 系统启动时清空日志文件 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 滚动策略：按时间和大小滚动 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/archive/${APP_NAME}-slow-sql-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>30MB</maxFileSize> <!-- 单个文件最大30MB -->
+            <maxHistory>45</maxHistory> <!-- 慢SQL日志保留45天 -->
+            <totalSizeCap>1GB</totalSizeCap> <!-- 总文件大小限制1GB -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart> <!-- 启动时清理历史文件 -->
+        </rollingPolicy>
+    </appender>
+
+    <!-- 前端日志文件输出 -->
+    <appender name="FRONTEND_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/frontend/${APP_NAME}-frontend.log</file>
+        <append>false</append> <!-- 系统启动时清空日志文件 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FRONTEND_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 滚动策略：按时间和大小滚动 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/frontend/archive/${APP_NAME}-frontend-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>25MB</maxFileSize> <!-- 单个文件最大25MB -->
+            <maxHistory>30</maxHistory> <!-- 前端日志保留30天 -->
+            <totalSizeCap>800MB</totalSizeCap> <!-- 总文件大小限制800MB -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart> <!-- 启动时清理历史文件 -->
+        </rollingPolicy>
+    </appender>
+
+    <!-- 专门的慢SQL日志记录器 -->
+    <logger name="druid.sql.Statement" level="debug" additivity="false">
+        <appender-ref ref="SLOW_SQL_FILE" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- 前端日志记录器 -->
+    <logger name="frontend.logger" level="INFO" additivity="false">
+        <appender-ref ref="FRONTEND_FILE" />
+    </logger>
+
+    <!-- Druid相关日志配置 -->
+    <logger name="com.alibaba.druid.filter.stat.StatFilter" level="debug" additivity="false">
+        <appender-ref ref="SLOW_SQL_FILE" />
+    </logger>
+
+    <!-- 根日志配置 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+        <appender-ref ref="ERROR_FILE" />
+    </root>
+
+    <!-- 开发环境配置 -->
+    <springProfile name="dev">
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="FILE" />
+            <appender-ref ref="ERROR_FILE" />
+        </root>
+    </springProfile>
+
+    <!-- 生产环境配置 -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="FILE" />
+            <appender-ref ref="ERROR_FILE" />
+        </root>
+    </springProfile>
+</configuration> 

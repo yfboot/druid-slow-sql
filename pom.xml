@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.example</groupId>
-    <artifactId>druid</artifactId>
+    <artifactId>druid-slow-sql</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>druid</name>
-    <description>druid</description>
+    <name>druid-slow-sql</name>
+    <description>druid-slow-sql</description>
     <url/>
     <licenses>
         <license/>

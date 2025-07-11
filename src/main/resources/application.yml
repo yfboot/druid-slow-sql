@@ -1,7 +1,18 @@
+# 应用环境声明（仅声明作用，不激活profile）
+app:
+  environment: dev  # 可选值：dev, test, prod
+
 spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  
+  # HTTP请求大小限制配置（支持大量前端日志）
+  servlet:
+    multipart:
+      max-file-size: 20MB      # 单个文件最大20MB
+      max-request-size: 20MB   # 请求总大小最大20MB
+      
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     url: jdbc:oracle:thin:@192.168.139.101:1521:XE
@@ -72,4 +83,31 @@ logging:
     druid.sql.ResultSet: warn          # 减少结果集日志输出
     # 专门的慢SQL日志配置
     com.alibaba.druid.filter.stat.StatFilter: debug  # 统计过滤器日志
-    com.alibaba.druid.filter.logging.Slf4jLogFilter: debug  # SLF4J日志过滤器 
+    com.alibaba.druid.filter.logging.Slf4jLogFilter: debug  # SLF4J日志过滤器
+    # 前端日志记录器
+    frontend.logger: info              # 前端日志级别
+    # 应用日志配置
+    org.example.druid: info            # 应用主包日志级别
+    root: info                         # 根日志级别
+
+# 前端日志配置
+frontend:
+  log:
+    enabled: true                      # 启用前端日志功能
+    max-batch-size: 100               # 批量日志最大数量
+    level-mapping:                     # 日志级别映射
+      debug: DEBUG
+      info: INFO
+      warn: WARN
+      error: ERROR
+
+# 服务器配置（支持大量日志内容）
+server:
+  # Tomcat配置（nginx代理架构优化）
+  tomcat:
+    max-http-post-size: 20MB   # POST请求体最大20MB（必须保留，支持前端大量日志）
+    # 在nginx代理架构下，以下配置可以简化或删除：
+    # max-connections: nginx管理客户端连接，tomcat连接数可以更少
+    # accept-count: nginx处理连接排队，tomcat无需等待队列
+  # HTTP请求头大小  
+  max-http-header-size: 16KB   # 请求头最大16KB 

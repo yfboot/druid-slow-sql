@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端日志功能测试页面</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-info { background: linear-gradient(45deg, #2196F3, #1976D2); }
+        .btn-warning { background: linear-gradient(45deg, #FF9800, #F57400); }
+        .btn-danger { background: linear-gradient(45deg, #f44336, #d32f2f); }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .log-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #4CAF50;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .api-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .api-info code {
+            background: #424242;
+            color: #ffeb3b;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 前端日志功能测试页面</h1>
+            <p>测试 Spring Boot 后端的前端日志记录接口</p>
+        </div>
+        
+        <div class="content">
+            <div class="api-info">
+                <h4>📝 API 接口说明</h4>
+                <p><strong>单条日志：</strong> <code>POST /api/frontend-log/single</code></p>
+                <p><strong>批量日志：</strong> <code>POST /api/frontend-log/batch</code></p>
+                <p><strong>快速日志：</strong> <code>POST /api/frontend-log/quick</code></p>
+                <p><strong>日志配置：</strong> <code>GET /api/frontend-log/config</code></p>
+                <p><strong>日志信息：</strong> <code>GET /api/frontend-log/info</code></p>
+                <p><strong>最近日志：</strong> <code>GET /api/frontend-log/recent</code></p>
+            </div>
+            
+            <div class="grid">
+                <div class="section">
+                    <h3>📋 单条日志记录</h3>
+                    <form id="singleLogForm">
+                        <div class="form-group">
+                            <label for="level">日志级别</label>
+                            <select id="level" name="level">
+                                <option value="INFO">INFO</option>
+                                <option value="DEBUG">DEBUG</option>
+                                <option value="WARN">WARN</option>
+                                <option value="ERROR">ERROR</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">日志消息</label>
+                            <textarea id="message" name="message" placeholder="请输入日志消息...">用户点击了登录按钮</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="module">模块名称</label>
+                            <input type="text" id="module" name="module" placeholder="如：LoginModule" value="TestModule">
+                        </div>
+                        <div class="form-group">
+                            <label for="userId">用户ID</label>
+                            <input type="text" id="userId" name="userId" placeholder="如：user123" value="testUser001">
+                        </div>
+                        <button type="submit" class="btn">记录单条日志</button>
+                    </form>
+                    <div id="singleLogResult" class="result" style="display: none;"></div>
+                </div>
+                
+                <div class="section">
+                    <h3>📦 批量日志记录</h3>
+                    <button type="button" class="btn" onclick="generateBatchLogs()">生成测试批量日志</button>
+                    <button type="button" class="btn btn-info" onclick="sendBatchLogs()">发送批量日志</button>
+                    <div id="batchLogResult" class="result" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <div class="grid">
+                <div class="section">
+                    <h3>⚡ 快速日志记录</h3>
+                    <button type="button" class="btn btn-info" onclick="quickLog('INFO', '页面加载完成')">INFO 日志</button>
+                    <button type="button" class="btn btn-warning" onclick="quickLog('WARN', '网络连接缓慢')">WARN 日志</button>
+                    <button type="button" class="btn btn-danger" onclick="quickLog('ERROR', '请求失败，请重试')">ERROR 日志</button>
+                    <div id="quickLogResult" class="result" style="display: none;"></div>
+                </div>
+                
+                <div class="section">
+                    <h3>📊 系统信息</h3>
+                    <button type="button" class="btn btn-info" onclick="getConfig()">获取配置信息</button>
+                    <button type="button" class="btn btn-info" onclick="getLogInfo()">获取日志文件信息</button>
+                    <button type="button" class="btn btn-info" onclick="initLogDirectory()">初始化日志目录</button>
+                    <div id="systemResult" class="result" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>📜 最近日志内容</h3>
+                <div style="margin-bottom: 15px;">
+                    <label for="logLines">显示行数：</label>
+                    <select id="logLines">
+                        <option value="10">10 行</option>
+                        <option value="20">20 行</option>
+                        <option value="50" selected>50 行</option>
+                        <option value="100">100 行</option>
+                    </select>
+                    <button type="button" class="btn btn-info" onclick="getRecentLogs()">获取最近日志</button>
+                </div>
+                <div id="recentLogsResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 格式化日期为 yyyy-MM-dd HH:mm:ss 格式
+        function formatDateTime(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+        
+        // 单条日志记录
+        document.getElementById('singleLogForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const logData = {
+                level: formData.get('level'),
+                message: formData.get('message'),
+                module: formData.get('module'),
+                userId: formData.get('userId'),
+                url: window.location.href,
+                timestamp: formatDateTime(new Date())
+            };
+            
+            try {
+                const response = await fetch('/api/frontend-log/single', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(logData)
+                });
+                
+                const result = await response.json();
+                showResult('singleLogResult', result, response.ok);
+                
+            } catch (error) {
+                showResult('singleLogResult', { error: error.message }, false);
+            }
+        });
+        
+        // 生成批量日志
+        function generateBatchLogs() {
+            const levels = ['INFO', 'DEBUG', 'WARN', 'ERROR'];
+            const modules = ['UserModule', 'OrderModule', 'PaymentModule', 'ProductModule'];
+            const messages = [
+                '用户操作记录',
+                '数据查询完成',
+                '缓存更新',
+                '接口调用',
+                '页面渲染完成'
+            ];
+            
+            window.batchLogs = [];
+            for (let i = 0; i < 5; i++) {
+                window.batchLogs.push({
+                    level: levels[Math.floor(Math.random() * levels.length)],
+                    message: `${messages[Math.floor(Math.random() * messages.length)]} - ${i + 1}`,
+                    module: modules[Math.floor(Math.random() * modules.length)],
+                    userId: `user${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
+                    url: window.location.href,
+                    timestamp: formatDateTime(new Date())
+                });
+            }
+            
+            showResult('batchLogResult', { message: `已生成 ${window.batchLogs.length} 条测试日志，点击"发送批量日志"按钮提交` }, true);
+        }
+        
+        // 发送批量日志
+        async function sendBatchLogs() {
+            if (!window.batchLogs || window.batchLogs.length === 0) {
+                showResult('batchLogResult', { error: '请先生成测试日志' }, false);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/frontend-log/batch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(window.batchLogs)
+                });
+                
+                const result = await response.json();
+                showResult('batchLogResult', result, response.ok);
+                
+            } catch (error) {
+                showResult('batchLogResult', { error: error.message }, false);
+            }
+        }
+        
+        // 快速日志记录
+        async function quickLog(level, message) {
+            try {
+                const response = await fetch(`/api/frontend-log/quick?level=${level}&message=${encodeURIComponent(message)}&module=QuickTest&userId=quickUser`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                showResult('quickLogResult', result, response.ok);
+                
+            } catch (error) {
+                showResult('quickLogResult', { error: error.message }, false);
+            }
+        }
+        
+        // 获取配置信息
+        async function getConfig() {
+            try {
+                const response = await fetch('/api/frontend-log/config');
+                const result = await response.json();
+                showResult('systemResult', result, response.ok);
+            } catch (error) {
+                showResult('systemResult', { error: error.message }, false);
+            }
+        }
+        
+        // 获取日志文件信息
+        async function getLogInfo() {
+            try {
+                const response = await fetch('/api/frontend-log/info');
+                const result = await response.json();
+                showResult('systemResult', result, response.ok);
+            } catch (error) {
+                showResult('systemResult', { error: error.message }, false);
+            }
+        }
+        
+        // 初始化日志目录
+        async function initLogDirectory() {
+            try {
+                const response = await fetch('/api/frontend-log/init', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                showResult('systemResult', result, response.ok);
+            } catch (error) {
+                showResult('systemResult', { error: error.message }, false);
+            }
+        }
+        
+        // 获取最近日志
+        async function getRecentLogs() {
+            const lines = document.getElementById('logLines').value;
+            try {
+                const response = await fetch(`/api/frontend-log/recent?lines=${lines}`);
+                const result = await response.json();
+                
+                if (result.logs && result.logs.length > 0) {
+                    let formattedLogs = `获取到 ${result.logs.length} 行日志：\n\n`;
+                    result.logs.forEach((log, index) => {
+                        formattedLogs += `${index + 1}. ${log}\n`;
+                    });
+                    result.formattedLogs = formattedLogs;
+                }
+                
+                showResult('recentLogsResult', result, response.ok);
+            } catch (error) {
+                showResult('recentLogsResult', { error: error.message }, false);
+            }
+        }
+        
+        // 显示结果
+        function showResult(elementId, result, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            
+            if (result.formattedLogs) {
+                element.textContent = result.formattedLogs;
+            } else {
+                element.textContent = JSON.stringify(result, null, 2);
+            }
+        }
+        
+        // 页面加载完成后自动记录一条日志
+        window.addEventListener('load', function() {
+            console.log('前端日志测试页面加载完成');
+            
+            // 自动初始化日志目录
+            setTimeout(() => {
+                initLogDirectory();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 
