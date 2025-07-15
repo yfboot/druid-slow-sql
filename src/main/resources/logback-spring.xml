@@ -94,20 +94,15 @@
         </rollingPolicy>
     </appender>
 
-    <!-- 专门的慢SQL日志记录器 -->
-    <logger name="druid.sql.Statement" level="debug" additivity="false">
-        <appender-ref ref="SLOW_SQL_FILE" />
-        <appender-ref ref="CONSOLE" />
-    </logger>
-
     <!-- 前端日志记录器 -->
     <logger name="frontend.logger" level="INFO" additivity="false">
         <appender-ref ref="FRONTEND_FILE" />
     </logger>
 
-    <!-- Druid相关日志配置 -->
+    <!-- Druid慢SQL日志配置 - 捕获StatFilter输出的慢SQL日志 -->
     <logger name="com.alibaba.druid.filter.stat.StatFilter" level="debug" additivity="false">
         <appender-ref ref="SLOW_SQL_FILE" />
+        <appender-ref ref="CONSOLE" />
     </logger>
 
     <!-- 根日志配置 -->
